@@ -17,7 +17,7 @@ from io import BytesIO
 from PIL import Image
 import matplotlib
 
-matplotlib.use('Agg')  # Necesario para Streamlit
+matplotlib.use('Agg')  # Necesario para Streamlit en la nube
 
 def normalizar(texto):
     texto = unicodedata.normalize('NFKD', texto)
@@ -41,6 +41,7 @@ if archivo:
         st.stop()
 
     df[col_fecha] = pd.to_datetime(df[col_fecha], errors='coerce')
+    df[col_fecha] = df[col_fecha].dt.tz_localize(None)  # Eliminar zona horaria
     if df[col_fecha].dropna().empty:
         st.error("❌ Ninguna fecha se pudo convertir correctamente.")
         st.stop()
@@ -60,8 +61,8 @@ if archivo:
         fecha_min = fechas_disponibles.min()
         fecha_max = fechas_disponibles.max()
 
-        fecha_inicio = st.datetime_input("Fecha de inicio", min_value=fecha_min, max_value=fecha_max, value=fecha_min)
-        fecha_fin = st.datetime_input("Fecha de fin", min_value=fecha_min, max_value=fecha_max, value=fecha_max)
+        fecha_inicio = st.datetime_input("Fecha de inicio", min_value=fecha_min, max_value=fecha_max, value=fecha_min).replace(tzinfo=None)
+        fecha_fin = st.datetime_input("Fecha de fin", min_value=fecha_min, max_value=fecha_max, value=fecha_max).replace(tzinfo=None)
 
         df_filtrado = df[(df[col_fecha] >= fecha_inicio) & (df[col_fecha] <= fecha_fin)]
         mostrar_rango = True
