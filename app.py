@@ -84,6 +84,9 @@ if uploaded_file:
     ax.set_legend(loc='upper right', bbox_to_anchor=(1.3, 1), title="Velocidad (m/s)")
     fig.figimage(logo_array, xo=10, yo=10, alpha=0.6, zorder=15)
 
+    # Título de la rosa
+    plt.title("ROSA DE VIENTO", fontsize=14, weight='bold')
+
     # Calcular porcentaje por dirección (binned en 30°)
     bins_direccion = np.arange(0, 360, 30)
     etiquetas = [f"{i}°-{i+30}°" for i in bins_direccion]
@@ -109,5 +112,3 @@ if uploaded_file:
         st.info(f"Mostrando datos desde **{fecha_inicio.strftime('%d/%m/%Y %H:%M')}** hasta **{fecha_fin.strftime('%d/%m/%Y %H:%M')}**")
     else:
         st.info(f"Mostrando **todos los datos** del archivo.")
-
-
