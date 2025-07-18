@@ -71,7 +71,7 @@ if uploaded_file:
     url_logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMzPSKQza2TtRd6xqzQAhY2PMQ0il5P7u7Tg&s"
     response = requests.get(url_logo)
     logo_img = Image.open(BytesIO(response.content)).convert("RGBA")
-    logo_img_resized = logo_img.resize((420, 200))  # <-- LOGO MÁS GRANDE
+    logo_img_resized = logo_img.resize((400, 150))  # <-- LOGO MÁS GRANDE
     logo_array = np.asarray(logo_img_resized)
 
     # Crear figura
