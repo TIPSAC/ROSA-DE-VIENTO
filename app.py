@@ -71,7 +71,7 @@ if uploaded_file:
     url_logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMzPSKQza2TtRd6xqzQAhY2PMQ0il5P7u7Tg&s"
     response = requests.get(url_logo)
     logo_img = Image.open(BytesIO(response.content)).convert("RGBA")
-    logo_img_resized = logo_img.resize((170, 80))
+    logo_img_resized = logo_img.resize((220, 100))  # <-- LOGO MÁS GRANDE
     logo_array = np.asarray(logo_img_resized)
 
     # Crear figura
@@ -81,7 +81,7 @@ if uploaded_file:
 
     # Personalización
     ax.set_yticklabels(['', '', '', '', ''])  # Ocultar etiquetas de radio
-    ax.set_legend(loc='upper right', bbox_to_anchor=(1.3, 1), title="Velocidad (m/s)")
+    ax.set_legend(loc='upper right', bbox_to_anchor=(1.3, 1), title="Velocidad (m/s)", prop={'size': 10}, title_fontsize='large')  # <-- LEYENDA MÁS GRANDE
     fig.figimage(logo_array, xo=10, yo=10, alpha=0.6, zorder=15)
 
     # Título de la rosa
@@ -104,7 +104,7 @@ if uploaded_file:
                            loc='lower right',
                            bbox=[1.1, 0.05, 0.25, 0.45])
     tabla_plot.auto_set_font_size(False)
-    tabla_plot.set_fontsize(8)
+    tabla_plot.set_fontsize(10)  # <-- TAMAÑO DE LETRA MAYOR
 
     plt.tight_layout()
     st.pyplot(fig)
@@ -114,4 +114,5 @@ if uploaded_file:
         st.info(f"Mostrando datos desde **{fecha_inicio.strftime('%d/%m/%Y %H:%M')}** hasta **{fecha_fin.strftime('%d/%m/%Y %H:%M')}**")
     else:
         st.info(f"Mostrando **todos los datos** del archivo.")
+
 
