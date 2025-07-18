@@ -11,73 +11,67 @@ import matplotlib.pyplot as plt
 from windrose import WindroseAxes
 import numpy as np
 from datetime import datetime
-import unicodedata
-import requests
-from io import BytesIO
 from PIL import Image
-import matplotlib
+from io import BytesIO
+import requests
+import unicodedata
 
-matplotlib.use('Agg')  # Necesario para que funcione en Streamlit Cloud
+st.set_page_config(page_title="Rosa de Viento", layout="wide")
 
 def normalizar(texto):
     texto = unicodedata.normalize('NFKD', texto)
     texto = ''.join(c for c in texto if not unicodedata.combining(c))
     return texto.lower().strip()
 
-st.set_page_config(layout="centered")
-st.title("🌬️ Generador de Rosa de Viento")
+st.title("🌬️ Rosa de Viento Interactiva")
 
-archivo = st.file_uploader("📁 Sube tu archivo Excel", type=["xlsx", "xls"])
+uploaded_file = st.file_uploader("📤 Sube tu archivo Excel (.xlsx)", type=["xlsx"])
 
-if archivo:
-    df = pd.read_excel(archivo)
+if uploaded_file is not None:
+    df = pd.read_excel(uploaded_file)
 
-    # Buscar columna de fecha
     palabras_fecha = ['fecha', 'date', 'tiempo', 'time']
     col_fecha = next((col for col in df.columns if any(p in col.lower() for p in palabras_fecha)), None)
-
-    if not col_fecha:
-        st.error("❌ No se encontró una columna de fecha.")
+    if col_fecha is None:
+        st.error("❌ No se encontró una columna de fecha (fecha/date/tiempo).")
         st.stop()
 
     df[col_fecha] = pd.to_datetime(df[col_fecha], errors='coerce')
-    df[col_fecha] = df[col_fecha].dt.tz_localize(None)  # Quitar zona horaria
-    if df[col_fecha].dropna().empty:
-        st.error("❌ Ninguna fecha se pudo convertir correctamente.")
+    df = df.dropna(subset=[col_fecha])
+    if df.empty:
+        st.error("❌ No hay fechas válidas.")
         st.stop()
 
-    # Buscar columnas de velocidad y dirección
     col_speed = next((col for col in df.columns if "speed" in col.lower()), None)
     col_direction = next((col for col in df.columns if "direction" in col.lower()), None)
-
-    if not col_speed or not col_direction:
+    if col_speed is None or col_direction is None:
         st.error("❌ No se encontraron columnas con 'Speed' y/o 'Direction'.")
         st.stop()
 
     usar_rango = st.radio("¿Deseas ingresar un rango de fechas?", ["No", "Sí"])
 
     if usar_rango == "Sí":
-        fechas_disponibles = df[col_fecha].dropna().sort_values()
-        fecha_min = fechas_disponibles.min()
-        fecha_max = fechas_disponibles.max()
+        fecha_min = df[col_fecha].min()
+        fecha_max = df[col_fecha].max()
 
-        rango_fechas = st.slider(
-            "Selecciona el rango de fechas:",
-            min_value=fecha_min,
-            max_value=fecha_max,
-            value=(fecha_min, fecha_max),
-            format="DD/MM/YYYY HH:mm"
-        )
+        st.markdown("### Selecciona el rango de fechas")
 
-        fecha_inicio, fecha_fin = rango_fechas
-        df_filtrado = df[(df[col_fecha] >= fecha_inicio) & (df[col_fecha] <= fecha_fin)]
+        fecha_inicio_fecha = st.date_input("📅 Fecha de inicio", value=fecha_min.date(), min_value=fecha_min.date(), max_value=fecha_max.date())
+        fecha_inicio_hora = st.time_input("⏰ Hora de inicio", value=fecha_min.time())
+
+        fecha_fin_fecha = st.date_input("📅 Fecha de fin", value=fecha_max.date(), min_value=fecha_min.date(), max_value=fecha_max.date())
+        fecha_fin_hora = st.time_input("⏰ Hora de fin", value=fecha_max.time())
+
+        fecha_inicio = datetime.combine(fecha_inicio_fecha, fecha_inicio_hora)
+        fecha_fin = datetime.combine(fecha_fin_fecha, fecha_fin_hora)
+
+        df = df[(df[col_fecha] >= fecha_inicio) & (df[col_fecha] <= fecha_fin)]
         mostrar_rango = True
     else:
-        df_filtrado = df
         mostrar_rango = False
 
-    velocidad = df_filtrado[col_speed]
-    direccion = df_filtrado[col_direction]
+    velocidad = df[col_speed]
+    direccion = df[col_direction]
 
     etiquetas = ['0° N', 'NE', '90°E', 'SE', '180°S', 'SW', '270°W', 'NW']
     grados = np.arange(0, 360, 45)
@@ -95,12 +89,12 @@ if archivo:
         rango_texto = f"{fecha_inicio.strftime('%d/%m/%Y %H:%M')} \n al  {fecha_fin.strftime('%d/%m/%Y %H:%M')}"
         fig.text(0.95, 0.08, f"Del: {rango_texto}", ha='center', fontsize=11)
 
-    # Logo desde URL
     url_logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMzPSKQza2TtRd6xqzQAhY2PMQ0il5P7u7Tg&s"
     response = requests.get(url_logo)
     logo_img = Image.open(BytesIO(response.content)).convert("RGBA")
     logo_img_resized = logo_img.resize((170, 80))
     logo_array = np.asarray(logo_img_resized)
+
     fig.figimage(logo_array, xo=10, yo=10, alpha=0.6, zorder=15)
 
     ax.set_yticklabels(['', '', '', '', ''])
