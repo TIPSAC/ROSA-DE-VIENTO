@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 from windrose import WindroseAxes
 import numpy as np
 from datetime import datetime, time
+import requests
+from io import BytesIO
+from PIL import Image
 
 st.set_page_config(page_title="Rosa de Viento", layout="centered")
 st.title("🌬️ Visualizador de Rosa de Viento")
@@ -64,10 +67,41 @@ if uploaded_file:
 
     st.subheader("📊 Rosa de Viento")
 
+    # Cargar logo desde URL y procesar
+    url_logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMzPSKQza2TtRd6xqzQAhY2PMQ0il5P7u7Tg&s"
+    response = requests.get(url_logo)
+    logo_img = Image.open(BytesIO(response.content)).convert("RGBA")
+    logo_img_resized = logo_img.resize((170, 80))
+    logo_array = np.asarray(logo_img_resized)
+
+    # Crear figura
     fig = plt.figure(figsize=(8, 6))
     ax = WindroseAxes.from_ax(fig=fig)
     ax.bar(df['direccion'], df['velocidad'], normed=True, opening=0.8, edgecolor='white')
-    ax.set_legend()
+
+    # Personalización
+    ax.set_yticklabels(['', '', '', '', ''])  # Ocultar etiquetas de radio
+    ax.set_legend(loc='upper right', bbox_to_anchor=(1.3, 1), title="Velocidad (m/s)")
+    fig.figimage(logo_array, xo=10, yo=10, alpha=0.6, zorder=15)
+
+    # Calcular porcentaje por dirección (binned en 30°)
+    bins_direccion = np.arange(0, 360, 30)
+    etiquetas = [f"{i}°-{i+30}°" for i in bins_direccion]
+    direcciones_cortadas = pd.cut(df['direccion'], bins=np.append(bins_direccion, 360), labels=etiquetas, right=False)
+    porcentaje = (direcciones_cortadas.value_counts(normalize=True).sort_index() * 100).round(1)
+
+    # Agregar tabla al costado
+    tabla = pd.DataFrame({'% Dirección': porcentaje})
+    tabla_plot = plt.table(cellText=tabla.values,
+                           rowLabels=tabla.index,
+                           colLabels=tabla.columns,
+                           cellLoc='center',
+                           loc='lower right',
+                           bbox=[1.1, 0.05, 0.25, 0.45])
+    tabla_plot.auto_set_font_size(False)
+    tabla_plot.set_fontsize(8)
+
+    plt.tight_layout()
     st.pyplot(fig)
 
     # Mostrar resumen del rango
@@ -75,4 +109,5 @@ if uploaded_file:
         st.info(f"Mostrando datos desde **{fecha_inicio.strftime('%d/%m/%Y %H:%M')}** hasta **{fecha_fin.strftime('%d/%m/%Y %H:%M')}**")
     else:
         st.info(f"Mostrando **todos los datos** del archivo.")
+
 
