@@ -81,7 +81,7 @@ if uploaded_file:
 
     # Personalización
     ax.set_yticklabels(['', '', '', '', ''])  # Ocultar etiquetas de radio
-    ax.set_legend(loc='upper right', bbox_to_anchor=(1.3, 1), title="Velocidad (m/s)", prop={'size': 15}, title_fontsize='large')  # <-- LEYENDA MÁS GRANDE
+    ax.set_legend(loc='upper right', bbox_to_anchor=(1.3, 1), title="Velocidad (m/s)", prop={'size': 20}, title_fontsize='large')  # <-- LEYENDA MÁS GRANDE
     fig.figimage(logo_array, xo=10, yo=10, alpha=0.8, zorder=15)
 
     # Título de la rosa
