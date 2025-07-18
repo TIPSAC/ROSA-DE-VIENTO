@@ -75,7 +75,7 @@ if uploaded_file:
     logo_array = np.asarray(logo_img_resized)
 
     # Crear figura
-    fig = plt.figure(figsize=(8, 6))
+    fig = plt.figure(figsize=(10, 8))
     ax = WindroseAxes.from_ax(fig=fig)
     ax.bar(df['direccion'], df['velocidad'], normed=True, opening=0.8, edgecolor='white')
 
@@ -85,16 +85,18 @@ if uploaded_file:
     fig.figimage(logo_array, xo=10, yo=10, alpha=0.6, zorder=15)
 
     # Título de la rosa
-    plt.title("ROSA DE VIENTO", fontsize=14, weight='bold')
+    plt.title("ROSA DE VIENTO", pad=25, fontsize=16, ha="left")
 
-    # Calcular porcentaje por dirección (binned en 30°)
-    bins_direccion = np.arange(0, 360, 30)
-    etiquetas = [f"{i}°-{i+30}°" for i in bins_direccion]
-    direcciones_cortadas = pd.cut(df['direccion'], bins=np.append(bins_direccion, 360), labels=etiquetas, right=False)
-    porcentaje = (direcciones_cortadas.value_counts(normalize=True).sort_index() * 100).round(1)
+    # Calcular % por dirección con etiquetas cardinales
+    etiquetas = ['0° N', 'NE', '90°E', 'SE', '180°S', 'SW', '270°W', 'NW']
+    grados = np.arange(0, 360, 45)
+    bins = pd.cut(df['direccion'], bins=np.append(grados, 360), labels=etiquetas, right=False, include_lowest=True)
+    conteo = bins.value_counts().reindex(etiquetas).fillna(0)
+    porcentaje = (conteo / conteo.sum()) * 100
+    porcentaje_formateado = porcentaje.round(1).astype(str) + '%'
 
-    # Agregar tabla al costado
-    tabla = pd.DataFrame({'% Dirección': porcentaje})
+    # Crear tabla a la derecha
+    tabla = pd.DataFrame({'% Dirección': porcentaje_formateado})
     tabla_plot = plt.table(cellText=tabla.values,
                            rowLabels=tabla.index,
                            colLabels=tabla.columns,
@@ -112,3 +114,4 @@ if uploaded_file:
         st.info(f"Mostrando datos desde **{fecha_inicio.strftime('%d/%m/%Y %H:%M')}** hasta **{fecha_fin.strftime('%d/%m/%Y %H:%M')}**")
     else:
         st.info(f"Mostrando **todos los datos** del archivo.")
+
