@@ -15,7 +15,7 @@ import requests
 from io import BytesIO
 from PIL import Image
 
-st.set_page_config(page_title="Rosa de Viento", layout="centered")
+st.set_page_config(page_title="Rosa de Viento")
 st.title("🌬️ GENERADOR DE ROSA DE VIENTO")
 
 uploaded_file = st.file_uploader("📤 Suba su archivo Excel", type=["xlsx"])
