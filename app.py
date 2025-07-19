@@ -15,7 +15,32 @@ import requests
 from io import BytesIO
 from PIL import Image
 
+# Configuración de la página
 st.set_page_config(page_title="Rosa de Viento", layout="centered")
+
+# Fondo con imagen y filtro translúcido
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQMEPywVhrhJUWIvPfjYp4fELDOBNWzXipzA&s");
+        background-attachment: fixed;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }}
+
+    .main > div {{
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("🌬️ GENERAR ROSA DE VIENTO")
 
 uploaded_file = st.file_uploader("📤 Suba su archivo Excel", type=["xlsx"])
@@ -71,7 +96,7 @@ if uploaded_file:
     url_logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMzPSKQza2TtRd6xqzQAhY2PMQ0il5P7u7Tg&s"
     response = requests.get(url_logo)
     logo_img = Image.open(BytesIO(response.content)).convert("RGBA")
-    logo_img_resized = logo_img.resize((380, 150))  # <-- LOGO MÁS GRANDE
+    logo_img_resized = logo_img.resize((380, 150))
     logo_array = np.asarray(logo_img_resized)
 
     # Crear figura
@@ -80,11 +105,10 @@ if uploaded_file:
     ax.bar(df['direccion'], df['velocidad'], normed=True, opening=0.8, edgecolor='white')
 
     # Personalización
-    ax.set_yticklabels(['', '', '', '', ''])  # Ocultar etiquetas de radio
-    ax.set_legend(loc='upper right', bbox_to_anchor=(1.3, 1), title="Velocidad (m/s)", prop={'size': 20}, title_fontsize='large')  # <-- LEYENDA MÁS GRANDE
+    ax.set_yticklabels(['', '', '', '', ''])
+    ax.set_legend(loc='upper right', bbox_to_anchor=(1.3, 1), title="Velocidad (m/s)", prop={'size': 20}, title_fontsize='large')
     fig.figimage(logo_array, xo=10, yo=10, alpha=0.8, zorder=15)
 
-    # Título de la rosa
     plt.title("ROSA DE VIENTO", pad=25, fontsize=16, ha="left")
 
     # Calcular % por dirección con etiquetas cardinales
@@ -104,7 +128,7 @@ if uploaded_file:
                            loc='lower right',
                            bbox=[1.1, 0.05, 0.25, 0.45])
     tabla_plot.auto_set_font_size(False)
-    tabla_plot.set_fontsize(10)  # <-- TAMAÑO DE LETRA MAYOR
+    tabla_plot.set_fontsize(10)
 
     plt.tight_layout()
     st.pyplot(fig)
