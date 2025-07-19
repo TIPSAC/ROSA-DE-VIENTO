@@ -18,22 +18,7 @@ from PIL import Image
 st.set_page_config(page_title="Rosa de Viento", layout="centered")
 st.title("🌬️ GENERAR ROSA DE VIENTO")
 
-# Personalizar botón de subida con texto "Subir Excel"
-st.markdown("""
-    <style>
-    [data-testid="stFileUploader"] > div:first-child {
-        color: black;
-        font-weight: 600;
-    }
-    button[kind="primary"] {
-        background-color: #0068c9;
-        color: white;
-        font-weight: bold;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-uploaded_file = st.file_uploader("Subir Excel", type=["xlsx"])
+uploaded_file = st.file_uploader("📤 Suba su archivo Excel", type=["xlsx"])
 
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
@@ -129,5 +114,4 @@ if uploaded_file:
         st.info(f"Mostrando datos desde **{fecha_inicio.strftime('%d/%m/%Y %H:%M')}** hasta **{fecha_fin.strftime('%d/%m/%Y %H:%M')}**")
     else:
         st.info(f"Mostrando **todos los datos** del archivo.")
-
 
